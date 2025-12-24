@@ -1,36 +1,116 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ChevronRight } from "lucide-react"
+import { generateFulfilments, type FulfilmentRecord } from "@/lib/synthetic-data"
 
 const fulfilmentsChartData = [
-  { name: "Closed", value: 400, color: "var(--chart-2)" },
-  { name: "Open", value: 450, color: "var(--chart-3)" },
+  { name: "Closed", value: 400, color: "#FFD3B6", type: "status" },
+  { name: "Open", value: 450, color: "#FFDFD3", type: "status" },
 ]
 
-const fulfilmentData = [
-  { category: "MOT", Open: 185, Closed: 200 },
-  { category: "NON-MOT", Open: 265, Closed: 200 },
+const fulfilmentColumns = [
+  { key: "id", label: "Fulfilment ID" },
+  { key: "positionTitle", label: "Position" },
+  { key: "candidateName", label: "Candidate" },
+  { key: "type", label: "Type" },
+  { key: "status", label: "Status" },
+  { key: "division", label: "Division" },
+  { key: "location", label: "Location" },
+  { key: "joinDate", label: "Join Date" },
+  { key: "recruiter", label: "Recruiter" },
+  { key: "daysOpen", label: "Days Open" },
 ]
-
-const renderLegend = (props: any) => {
-  const { payload } = props
-  return (
-    <div className="flex flex-wrap justify-center gap-3 mt-4">
-      {payload.map((entry: any, index: number) => (
-        <div key={`legend-${index}`} className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
-          <span className="text-sm text-muted-foreground">{entry.value}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 export function FulfilmentsModule() {
+  const [animatedData, setAnimatedData] = useState(fulfilmentsChartData.map((d) => ({ ...d, value: 0 })))
+  const [isLoading, setIsLoading] = useState(true)
+  const [detailView, setDetailView] = useState<{ isOpen: boolean; data: FulfilmentRecord[]; title: string }>({
+    isOpen: false,
+    data: [],
+    title: "",
+  })
+
+  const [searchQuery, setSearchQuery] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [sortColumn, setSortColumn] = useState<string>("")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
+  const itemsPerPage = 10
+
   const totalOpen = 450
   const totalClosed = 400
   const totalPositions = 850
+
+  useEffect(() => {
+    setIsLoading(true)
+    const duration = 1000
+    const steps = 60
+    const increment = duration / steps
+
+    let currentStep = 0
+    const interval = setInterval(() => {
+      currentStep++
+      const progress = currentStep / steps
+
+      setAnimatedData(
+        fulfilmentsChartData.map((d) => ({
+          ...d,
+          value: Math.floor(d.value * progress),
+        })),
+      )
+
+      if (currentStep >= steps) {
+        clearInterval(interval)
+        setIsLoading(false)
+      }
+    }, increment)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleBarClick = (status: string, count: number) => {
+    const stat = status as "Open" | "Closed"
+    const motCount = Math.floor(count / 2)
+    const nonMotCount = count - motCount
+    const records = [
+      ...generateFulfilments(motCount, "MOT", stat),
+      ...generateFulfilments(nonMotCount, "NON-MOT", stat),
+    ]
+    setDetailView({
+      isOpen: true,
+      data: records,
+      title: `${status} Fulfilments`,
+    })
+    setSearchQuery("")
+    setCurrentPage(1)
+  }
+
+  const filteredData = detailView.data.filter((item) =>
+    Object.values(item).some((value) => String(value).toLowerCase().includes(searchQuery.toLowerCase())),
+  )
+
+  const sortedData = [...filteredData].sort((a, b) => {
+    if (!sortColumn) return 0
+    const aVal = String(a[sortColumn as keyof typeof a])
+    const bVal = String(b[sortColumn as keyof typeof b])
+    return sortDirection === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
+  })
+
+  const paginatedData = sortedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage)
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setSortColumn(column)
+      setSortDirection("asc")
+    }
+  }
 
   return (
     <Card id="fulfilments-module">
@@ -47,34 +127,40 @@ export function FulfilmentsModule() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Pie Chart */}
-          <div className="flex flex-col items-center justify-center">
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie
-                  data={fulfilmentsChartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={90}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {fulfilmentsChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Legend content={renderLegend} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+        {!detailView.isOpen ? (
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="flex flex-col items-center justify-center">
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={animatedData} barSize={60}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip
+                    cursor={{ fill: "rgba(0, 0, 0, 0.1)" }}
+                    contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
+                  />
+                  <Bar
+                    dataKey="value"
+                    radius={[8, 8, 0, 0]}
+                    onClick={(data) =>
+                      handleBarClick(data.name, fulfilmentsChartData.find((d) => d.name === data.name)?.value || 0)
+                    }
+                    className="cursor-pointer"
+                  >
+                    {animatedData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
 
-          {/* Stats and Breakdown */}
-          <div className="flex flex-col justify-center space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-border bg-muted/30 p-4">
-                <div className="text-2xl font-bold" style={{ color: "var(--chart-2)" }}>
+            {/* Stats and Breakdown */}
+            <div className="flex flex-col justify-center space-y-4">
+              <div
+                className="rounded-lg border border-border bg-muted/30 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleBarClick("Closed", totalClosed)}
+              >
+                <div className="text-2xl font-bold" style={{ color: "#FFD3B6" }}>
                   {totalClosed}
                 </div>
                 <div className="mt-1 text-sm text-muted-foreground">Closed Positions</div>
@@ -82,8 +168,12 @@ export function FulfilmentsModule() {
                   {((totalClosed / totalPositions) * 100).toFixed(0)}% fulfilled
                 </div>
               </div>
-              <div className="rounded-lg border border-border bg-muted/30 p-4">
-                <div className="text-2xl font-bold" style={{ color: "var(--chart-3)" }}>
+
+              <div
+                className="rounded-lg border border-border bg-muted/30 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleBarClick("Open", totalOpen)}
+              >
+                <div className="text-2xl font-bold" style={{ color: "#FFDFD3" }}>
                   {totalOpen}
                 </div>
                 <div className="mt-1 text-sm text-muted-foreground">Open Positions</div>
@@ -91,27 +181,106 @@ export function FulfilmentsModule() {
                   {((totalOpen / totalPositions) * 100).toFixed(0)}% pending
                 </div>
               </div>
-            </div>
 
-            {fulfilmentData.map((item) => (
-              <div key={item.category} className="rounded-lg border border-border bg-card p-4">
-                <div className="mb-2 font-semibold text-card-foreground">{item.category}</div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Open:</span>
-                  <span className="font-bold" style={{ color: "var(--chart-3)" }}>
-                    {item.Open}
-                  </span>
+              <div className="rounded-lg border border-primary/50 bg-primary/5 p-4">
+                <div className="text-sm font-medium text-card-foreground">Fulfilment Rate</div>
+                <div className="mt-2 h-2 w-full rounded-full bg-muted">
+                  <div
+                    className="h-2 rounded-full bg-primary transition-all duration-1000"
+                    style={{ width: `${(totalClosed / totalPositions) * 100}%` }}
+                  />
                 </div>
-                <div className="mt-1 flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Closed:</span>
-                  <span className="font-bold" style={{ color: "var(--chart-2)" }}>
-                    {item.Closed}
-                  </span>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {((totalClosed / totalPositions) * 100).toFixed(1)}% complete
                 </div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">
+                {detailView.title} ({detailView.data.length} records)
+              </h3>
+              <Button variant="outline" size="sm" onClick={() => setDetailView({ ...detailView, isOpen: false })}>
+                <ChevronRight className="h-4 w-4 rotate-180 mr-2" />
+                Back
+              </Button>
+            </div>
+
+            <Input
+              placeholder="Search across all columns..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setCurrentPage(1)
+              }}
+              className="max-w-md"
+            />
+
+            <div className="rounded-md border overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted">
+                    <tr>
+                      {fulfilmentColumns.map((col) => (
+                        <th
+                          key={col.key}
+                          className="px-4 py-3 text-left font-medium cursor-pointer hover:bg-muted/80"
+                          onClick={() => handleSort(col.key)}
+                        >
+                          <div className="flex items-center gap-2">
+                            {col.label}
+                            {sortColumn === col.key && <span>{sortDirection === "asc" ? "↑" : "↓"}</span>}
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedData.map((row, idx) => (
+                      <tr key={idx} className="border-t hover:bg-muted/30">
+                        {fulfilmentColumns.map((col) => (
+                          <td key={col.key} className="px-4 py-3">
+                            {String(row[col.key as keyof typeof row])}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                {Math.min(currentPage * itemsPerPage, sortedData.length)} of {sortedData.length} results
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
