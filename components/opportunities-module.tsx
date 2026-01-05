@@ -2,28 +2,26 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import { generateOpportunities, type OpportunityRecord } from "@/lib/synthetic-data"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ChevronRight } from "lucide-react"
 
-const opportunitiesChartData = [
-  { name: "Open", value: 140, color: "#A8E6CF" },
-  { name: "Closed", value: 130, color: "#FFD3B6" },
+const accountData = [
+  { name: "Equitable Holdings", total: 150, closed: 90, inProgress: 40, notStarted: 20 },
+  { name: "Prudential Insurance", total: 180, closed: 130, inProgress: 30, notStarted: 20 },
+  { name: "AIG", total: 160, closed: 110, inProgress: 30, notStarted: 20 },
+  { name: "NYL", total: 200, closed: 150, inProgress: 30, notStarted: 20 },
+  { name: "GenWok", total: 160, closed: 120, inProgress: 20, notStarted: 20 },
 ]
 
 const serviceLineData = [
-  { name: "Cloud", open: 40, closed: 30, total: 70 },
-  { name: "AI", open: 35, closed: 25, total: 60 },
-  { name: "TI", open: 30, closed: 20, total: 50 },
-  { name: "ESU", open: 25, closed: 15, total: 40 },
-  { name: "CBO", open: 30, closed: 20, total: 50 },
-]
-
-const locationData = [
-  { name: "Onshore", open: 20, closed: 47, total: 67 },
-  { name: "Nearshore", open: 15, closed: 25, total: 40 },
-  { name: "Offshore", open: 63, closed: 100, total: 163 },
+  { name: "Cloud", total: 180, closed: 130, inProgress: 30, notStarted: 20 },
+  { name: "AI", total: 170, closed: 120, inProgress: 30, notStarted: 20 },
+  { name: "TI", total: 160, closed: 110, inProgress: 30, notStarted: 20 },
+  { name: "ESU", total: 170, closed: 120, inProgress: 30, notStarted: 20 },
+  { name: "CBO", total: 170, closed: 120, inProgress: 30, notStarted: 20 },
 ]
 
 const opportunityColumns = [
@@ -38,8 +36,20 @@ const opportunityColumns = [
   { key: "closureDate", label: "Closure Date" },
 ]
 
+const COLORS = {
+  total: "#8B9DC3",
+  closed: "#FFD3B6",
+  inProgress: "#A8E6CF",
+  notStarted: "#F7B2BD",
+}
+
 export function OpportunitiesModule() {
-  const [animatedData, setAnimatedData] = useState(opportunitiesChartData.map((d) => ({ ...d, value: 0 })))
+  const [accountAnimatedData, setAccountAnimatedData] = useState(
+    accountData.map((d) => ({ ...d, total: 0, closed: 0, inProgress: 0, notStarted: 0 })),
+  )
+  const [serviceLineAnimatedData, setServiceLineAnimatedData] = useState(
+    serviceLineData.map((d) => ({ ...d, total: 0, closed: 0, inProgress: 0, notStarted: 0 })),
+  )
   const [isLoading, setIsLoading] = useState(true)
   const [detailView, setDetailView] = useState<{ isOpen: boolean; data: OpportunityRecord[]; title: string }>({
     isOpen: false,
@@ -64,10 +74,23 @@ export function OpportunitiesModule() {
       currentStep++
       const progress = currentStep / steps
 
-      setAnimatedData(
-        opportunitiesChartData.map((d) => ({
+      setAccountAnimatedData(
+        accountData.map((d) => ({
           ...d,
-          value: Math.floor(d.value * progress),
+          total: Math.floor(d.total * progress),
+          closed: Math.floor(d.closed * progress),
+          inProgress: Math.floor(d.inProgress * progress),
+          notStarted: Math.floor(d.notStarted * progress),
+        })),
+      )
+
+      setServiceLineAnimatedData(
+        serviceLineData.map((d) => ({
+          ...d,
+          total: Math.floor(d.total * progress),
+          closed: Math.floor(d.closed * progress),
+          inProgress: Math.floor(d.inProgress * progress),
+          notStarted: Math.floor(d.notStarted * progress),
         })),
       )
 
@@ -80,12 +103,28 @@ export function OpportunitiesModule() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleDataClick = (title: string, count: number, status?: "Open" | "Closed") => {
-    const records = generateOpportunities(count, status || "Open")
+  const handleDataClick = (
+    title: string,
+    count: number,
+    status?: "Closed" | "In Progress" | "Not Started" | "Total",
+  ) => {
+    let records: OpportunityRecord[] = []
+
+    if (status === "Total" || !status) {
+      // Generate a mix of all statuses
+      records = [
+        ...generateOpportunities(Math.floor(count * 0.7), "Closed"),
+        ...generateOpportunities(Math.floor(count * 0.18), "In Progress"),
+        ...generateOpportunities(Math.floor(count * 0.12), "Not Started"),
+      ]
+    } else {
+      records = generateOpportunities(count, status)
+    }
+
     setDetailView({
       isOpen: true,
       data: records,
-      title: `${title} Opportunities`,
+      title: `${title} - ${status || "All"} Opportunities`,
     })
     setSearchQuery("")
     setCurrentPage(1)
@@ -120,127 +159,130 @@ export function OpportunitiesModule() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Opportunities</CardTitle>
-            <CardDescription>Pipeline distribution across service lines and locations</CardDescription>
+            <CardDescription>Pipeline distribution across accounts and service lines</CardDescription>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold text-foreground">₹270 Cr</div>
-            <div className="text-sm text-muted-foreground">Total Opportunity Value</div>
+            <div className="text-3xl font-bold text-foreground">850</div>
+            <div className="text-sm text-muted-foreground">Total Opportunities</div>
+            <div className="text-xs text-muted-foreground mt-1">Closed: 600 | In Progress: 150 | Not Started: 100</div>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         {!detailView.isOpen ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left: Service Line-wise Opportunities View */}
+            {/* Left: Account-wise Opportunities */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                Account-wise Opportunities
+              </h4>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={accountAnimatedData} margin={{ top: 20, right: 10, left: 0, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis
+                    dataKey="name"
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                    tick={{ fill: "hsl(var(--foreground))", fontSize: 11 }}
+                  />
+                  <YAxis tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--background))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                  <Bar
+                    dataKey="total"
+                    fill={COLORS.total}
+                    name="Total"
+                    onClick={(data) => handleDataClick(data.name, data.total, "Total")}
+                    cursor="pointer"
+                  />
+                  <Bar
+                    dataKey="closed"
+                    fill={COLORS.closed}
+                    name="Closed"
+                    onClick={(data) => handleDataClick(data.name, data.closed, "Closed")}
+                    cursor="pointer"
+                  />
+                  <Bar
+                    dataKey="inProgress"
+                    fill={COLORS.inProgress}
+                    name="In Progress"
+                    onClick={(data) => handleDataClick(data.name, data.inProgress, "In Progress")}
+                    cursor="pointer"
+                  />
+                  <Bar
+                    dataKey="notStarted"
+                    fill={COLORS.notStarted}
+                    name="Not Started"
+                    onClick={(data) => handleDataClick(data.name, data.notStarted, "Not Started")}
+                    cursor="pointer"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Right: Service Line-wise Opportunities */}
             <div className="space-y-4">
               <h4 className="text-sm font-semibold flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-primary" />
                 Service Line-wise Opportunities
               </h4>
-              <div className="space-y-4">
-                {serviceLineData.map((item) => (
-                  <div key={item.name} className="group flex items-center gap-4">
-                    <div className="w-16 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      {item.name}
-                    </div>
-                    <button
-                      onClick={() => handleDataClick(item.name, item.total)}
-                      className="relative flex-1 h-8 rounded-sm overflow-hidden bg-muted/20 border border-border/50 transition-all hover:border-primary/50 flex items-center pr-2"
-                    >
-                      {/* Closed Segment (Base) */}
-                      <div
-                        className="h-full transition-all duration-1000 ease-out flex items-center justify-center text-[10px] font-bold text-foreground/70"
-                        style={{
-                          backgroundColor: "#FFD3B6",
-                          width: `${(item.closed / 270) * 100}%`,
-                        }}
-                      >
-                        {item.closed}
-                      </div>
-                      {/* Open Segment (Stacked) */}
-                      <div
-                        className="h-full transition-all duration-1000 ease-out flex items-center justify-center text-[10px] font-bold text-foreground/70 border-l border-white/20"
-                        style={{
-                          backgroundColor: "#A8E6CF",
-                          width: `${(item.open / 270) * 100}%`,
-                        }}
-                      >
-                        {item.open}
-                      </div>
-                      <div className="flex-1" />
-                      <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-all" />
-                    </button>
-                    <div className="w-12 text-right text-xs font-bold text-muted-foreground">{item.total}</div>
-                  </div>
-                ))}
-              </div>
-              {/* Legend for the stacked bars */}
-              <div className="flex items-center gap-4 mt-2 px-16">
-                <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
-                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: "#FFD3B6" }} />
-                  <span>Closed</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
-                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: "#A8E6CF" }} />
-                  <span>Open</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Location-wise Opportunities View */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-primary" />
-                Location-wise Opportunities
-              </h4>
-              <div className="space-y-4">
-                {locationData.map((item) => (
-                  <div key={item.name} className="group flex items-center gap-4">
-                    <div className="w-16 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      {item.name}
-                    </div>
-                    <button
-                      onClick={() => handleDataClick(item.name, item.total)}
-                      className="relative flex-1 h-8 rounded-sm overflow-hidden bg-muted/20 border border-border/50 transition-all hover:border-primary/50 flex items-center pr-2"
-                    >
-                      {/* Closed Segment (Base) */}
-                      <div
-                        className="h-full transition-all duration-1000 ease-out flex items-center justify-center text-[10px] font-bold text-foreground/70"
-                        style={{
-                          backgroundColor: "#FFD3B6",
-                          width: `${(item.closed / 270) * 100}%`,
-                        }}
-                      >
-                        {item.closed}
-                      </div>
-                      {/* Open Segment (Stacked) */}
-                      <div
-                        className="h-full transition-all duration-1000 ease-out flex items-center justify-center text-[10px] font-bold text-foreground/70 border-l border-white/20"
-                        style={{
-                          backgroundColor: "#A8E6CF",
-                          width: `${(item.open / 270) * 100}%`,
-                        }}
-                      >
-                        {item.open}
-                      </div>
-                      <div className="flex-1" />
-                      <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-all" />
-                    </button>
-                    <div className="w-12 text-right text-xs font-bold text-muted-foreground">{item.total}</div>
-                  </div>
-                ))}
-              </div>
-              {/* Legend for the stacked bars */}
-              <div className="flex items-center gap-4 mt-2 px-16">
-                <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
-                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: "#FFD3B6" }} />
-                  <span>Closed</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
-                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: "#A8E6CF" }} />
-                  <span>Open</span>
-                </div>
-              </div>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={serviceLineAnimatedData} margin={{ top: 20, right: 10, left: 0, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis
+                    dataKey="name"
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                    tick={{ fill: "hsl(var(--foreground))", fontSize: 11 }}
+                  />
+                  <YAxis tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--background))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                  <Bar
+                    dataKey="total"
+                    fill={COLORS.total}
+                    name="Total"
+                    onClick={(data) => handleDataClick(data.name, data.total, "Total")}
+                    cursor="pointer"
+                  />
+                  <Bar
+                    dataKey="closed"
+                    fill={COLORS.closed}
+                    name="Closed"
+                    onClick={(data) => handleDataClick(data.name, data.closed, "Closed")}
+                    cursor="pointer"
+                  />
+                  <Bar
+                    dataKey="inProgress"
+                    fill={COLORS.inProgress}
+                    name="In Progress"
+                    onClick={(data) => handleDataClick(data.name, data.inProgress, "In Progress")}
+                    cursor="pointer"
+                  />
+                  <Bar
+                    dataKey="notStarted"
+                    fill={COLORS.notStarted}
+                    name="Not Started"
+                    onClick={(data) => handleDataClick(data.name, data.notStarted, "Not Started")}
+                    cursor="pointer"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         ) : (
@@ -289,7 +331,7 @@ export function OpportunitiesModule() {
                       <tr key={idx} className="border-t hover:bg-muted/30">
                         {opportunityColumns.map((col) => (
                           <td key={col.key} className="px-4 py-3">
-                            {String(row[col.key as keyof typeof row])}
+                            {String(row[col.key as keyof typeof row] || "")}
                           </td>
                         ))}
                       </tr>

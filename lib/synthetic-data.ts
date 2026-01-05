@@ -3,7 +3,7 @@ export interface OpportunityRecord {
   name: string
   client: string
   value: number
-  status: "Open" | "Closed"
+  status: "Closed" | "In Progress" | "Not Started"
   division: string
   owner: string
   createdDate: string
@@ -62,13 +62,16 @@ export interface RevenueRecord {
 }
 
 // Generate synthetic opportunities
-export function generateOpportunities(count: number, status: "Open" | "Closed"): OpportunityRecord[] {
+export function generateOpportunities(
+  count: number,
+  status: "Closed" | "In Progress" | "Not Started",
+): OpportunityRecord[] {
   const clients = ["Acme Corp", "TechGlobal", "InnovateLabs", "DataFlow Inc", "CloudVentures", "NextGen Systems"]
   const divisions = ["Cloud", "AI", "TI", "ESU", "CBO"]
   const owners = ["Sarah Johnson", "Mike Chen", "Emily Rodriguez", "David Kim", "Lisa Wang"]
 
   return Array.from({ length: count }, (_, i) => ({
-    id: `OPP-${status}-${String(i + 1).padStart(4, "0")}`,
+    id: `OPP-${status.replace(/\s+/g, '-')}-${String(i + 1).padStart(4, "0")}`,
     name: `${divisions[i % divisions.length]} Implementation Project ${i + 1}`,
     client: clients[Math.floor(Math.random() * clients.length)],
     value: Math.floor(Math.random() * 5) + 0.5,
