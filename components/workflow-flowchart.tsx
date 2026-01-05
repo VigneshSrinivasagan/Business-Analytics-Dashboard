@@ -110,7 +110,7 @@ export function WorkflowFlowchart() {
         break
       case "opportunities-open":
       case "opportunities-closed":
-        const status = step.dataType === "opportunities-closed" ? "Closed" : "Open"
+        const status = step.dataType === "opportunities-closed" ? "Closed" : "In Progress"
         title = `${status} Opportunities Details`
         data = generateOpportunities(50, status)
         columns = [

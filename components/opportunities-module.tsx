@@ -37,10 +37,10 @@ const opportunityColumns = [
 ]
 
 const COLORS = {
-  total: "#8B9DC3",
-  closed: "#FFD3B6",
-  inProgress: "#A8E6CF",
-  notStarted: "#F7B2BD",
+  total: "hsl(199, 89%, 48%)", // Sky Blue
+  closed: "hsl(149, 44%, 59%)", // Mint Green
+  inProgress: "hsl(24, 95%, 68%)", // Peach
+  notStarted: "hsl(283, 44%, 66%)", // Soft Lavender
 }
 
 export function OpportunitiesModule() {
@@ -179,26 +179,42 @@ export function OpportunitiesModule() {
               </h4>
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={accountAnimatedData} margin={{ top: 20, right: 10, left: 0, bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} />
                   <XAxis
                     dataKey="name"
                     angle={-45}
                     textAnchor="end"
                     height={100}
-                    tick={{ fill: "hsl(var(--foreground))", fontSize: 11 }}
+                    tick={{ fill: "currentColor", opacity: 0.6, fontSize: 11 }}
+                    axisLine={{ stroke: "currentColor", opacity: 0.2 }}
                   />
-                  <YAxis tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }} />
+                  <YAxis
+                    tick={{ fill: "currentColor", opacity: 0.6, fontSize: 12 }}
+                    axisLine={{ stroke: "currentColor", opacity: 0.2 }}
+                  />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
+                      backgroundColor: "var(--muted)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: "12px",
+                      color: "var(--color-foreground)",
+                      boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
                     }}
+                    itemStyle={{ fontSize: "12px", fontWeight: "500" }}
+                    cursor={{ fill: "currentColor", opacity: 0.05 }}
                   />
-                  <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                  <Legend
+                    wrapperStyle={{ paddingTop: "20px" }}
+                    formatter={(value) => (
+                      <span className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+                        {value}
+                      </span>
+                    )}
+                  />
                   <Bar
                     dataKey="total"
                     fill={COLORS.total}
+                    radius={[4, 4, 0, 0]}
                     name="Total"
                     onClick={(data) => handleDataClick(data.name, data.total, "Total")}
                     cursor="pointer"
@@ -206,6 +222,7 @@ export function OpportunitiesModule() {
                   <Bar
                     dataKey="closed"
                     fill={COLORS.closed}
+                    radius={[4, 4, 0, 0]}
                     name="Closed"
                     onClick={(data) => handleDataClick(data.name, data.closed, "Closed")}
                     cursor="pointer"
@@ -213,6 +230,7 @@ export function OpportunitiesModule() {
                   <Bar
                     dataKey="inProgress"
                     fill={COLORS.inProgress}
+                    radius={[4, 4, 0, 0]}
                     name="In Progress"
                     onClick={(data) => handleDataClick(data.name, data.inProgress, "In Progress")}
                     cursor="pointer"
@@ -220,6 +238,7 @@ export function OpportunitiesModule() {
                   <Bar
                     dataKey="notStarted"
                     fill={COLORS.notStarted}
+                    radius={[4, 4, 0, 0]}
                     name="Not Started"
                     onClick={(data) => handleDataClick(data.name, data.notStarted, "Not Started")}
                     cursor="pointer"
@@ -236,26 +255,42 @@ export function OpportunitiesModule() {
               </h4>
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={serviceLineAnimatedData} margin={{ top: 20, right: 10, left: 0, bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} />
                   <XAxis
                     dataKey="name"
                     angle={-45}
                     textAnchor="end"
                     height={100}
-                    tick={{ fill: "hsl(var(--foreground))", fontSize: 11 }}
+                    tick={{ fill: "currentColor", opacity: 0.6, fontSize: 11 }}
+                    axisLine={{ stroke: "currentColor", opacity: 0.2 }}
                   />
-                  <YAxis tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }} />
+                  <YAxis
+                    tick={{ fill: "currentColor", opacity: 0.6, fontSize: 12 }}
+                    axisLine={{ stroke: "currentColor", opacity: 0.2 }}
+                  />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
+                      backgroundColor: "var(--muted)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: "12px",
+                      color: "var(--color-foreground)",
+                      boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
                     }}
+                    itemStyle={{ fontSize: "12px", fontWeight: "500" }}
+                    cursor={{ fill: "currentColor", opacity: 0.05 }}
                   />
-                  <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                  <Legend
+                    wrapperStyle={{ paddingTop: "20px" }}
+                    formatter={(value) => (
+                      <span className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+                        {value}
+                      </span>
+                    )}
+                  />
                   <Bar
                     dataKey="total"
                     fill={COLORS.total}
+                    radius={[4, 4, 0, 0]}
                     name="Total"
                     onClick={(data) => handleDataClick(data.name, data.total, "Total")}
                     cursor="pointer"
@@ -263,6 +298,7 @@ export function OpportunitiesModule() {
                   <Bar
                     dataKey="closed"
                     fill={COLORS.closed}
+                    radius={[4, 4, 0, 0]}
                     name="Closed"
                     onClick={(data) => handleDataClick(data.name, data.closed, "Closed")}
                     cursor="pointer"
@@ -270,6 +306,7 @@ export function OpportunitiesModule() {
                   <Bar
                     dataKey="inProgress"
                     fill={COLORS.inProgress}
+                    radius={[4, 4, 0, 0]}
                     name="In Progress"
                     onClick={(data) => handleDataClick(data.name, data.inProgress, "In Progress")}
                     cursor="pointer"
@@ -277,6 +314,7 @@ export function OpportunitiesModule() {
                   <Bar
                     dataKey="notStarted"
                     fill={COLORS.notStarted}
+                    radius={[4, 4, 0, 0]}
                     name="Not Started"
                     onClick={(data) => handleDataClick(data.name, data.notStarted, "Not Started")}
                     cursor="pointer"
