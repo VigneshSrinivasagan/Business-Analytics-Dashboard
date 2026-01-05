@@ -2,15 +2,28 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts"
 import { generateOpportunities, type OpportunityRecord } from "@/lib/synthetic-data"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ChevronRight } from "lucide-react"
 
 const opportunitiesChartData = [
-  { name: "Open", value: 100, color: "#A8E6CF" },
-  { name: "Closed", value: 100, color: "#FFD3B6" },
+  { name: "Open", value: 140, color: "#A8E6CF" },
+  { name: "Closed", value: 130, color: "#FFD3B6" },
+]
+
+const serviceLineData = [
+  { name: "Cloud", open: 40, closed: 30, total: 70 },
+  { name: "AI", open: 35, closed: 25, total: 60 },
+  { name: "TI", open: 30, closed: 20, total: 50 },
+  { name: "ESU", open: 25, closed: 15, total: 40 },
+  { name: "CBO", open: 30, closed: 20, total: 50 },
+]
+
+const locationData = [
+  { name: "Onshore", open: 20, closed: 47, total: 67 },
+  { name: "Nearshore", open: 15, closed: 25, total: 40 },
+  { name: "Offshore", open: 63, closed: 100, total: 163 },
 ]
 
 const opportunityColumns = [
@@ -67,13 +80,12 @@ export function OpportunitiesModule() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleBarClick = (category: string, count: number) => {
-    const status = category as "Open" | "Closed"
-    const records = generateOpportunities(count, status)
+  const handleDataClick = (title: string, count: number, status?: "Open" | "Closed") => {
+    const records = generateOpportunities(count, status || "Open")
     setDetailView({
       isOpen: true,
       data: records,
-      title: `${category} Opportunities`,
+      title: `${title} Opportunities`,
     })
     setSearchQuery("")
     setCurrentPage(1)
@@ -108,70 +120,126 @@ export function OpportunitiesModule() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Opportunities</CardTitle>
-            <CardDescription>Real-time opportunity tracking</CardDescription>
+            <CardDescription>Pipeline distribution across service lines and locations</CardDescription>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold text-foreground">200</div>
-            <div className="text-sm text-muted-foreground">Total Opportunities</div>
+            <div className="text-3xl font-bold text-foreground">₹270 Cr</div>
+            <div className="text-sm text-muted-foreground">Total Opportunity Value</div>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         {!detailView.isOpen ? (
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="flex flex-col items-center justify-center">
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={animatedData} barSize={60}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip
-                    cursor={{ fill: "rgba(0, 0, 0, 0.1)" }}
-                    contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
-                  />
-                  <Bar
-                    dataKey="value"
-                    radius={[8, 8, 0, 0]}
-                    onClick={(data) =>
-                      handleBarClick(data.name, opportunitiesChartData.find((d) => d.name === data.name)?.value || 0)
-                    }
-                    className="cursor-pointer"
-                  >
-                    {animatedData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Left: Service Line-wise Opportunities View */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                Service Line-wise Opportunities
+              </h4>
+              <div className="space-y-4">
+                {serviceLineData.map((item) => (
+                  <div key={item.name} className="group flex items-center gap-4">
+                    <div className="w-16 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      {item.name}
+                    </div>
+                    <button
+                      onClick={() => handleDataClick(item.name, item.total)}
+                      className="relative flex-1 h-8 rounded-sm overflow-hidden bg-muted/20 border border-border/50 transition-all hover:border-primary/50 flex items-center pr-2"
+                    >
+                      {/* Closed Segment (Base) */}
+                      <div
+                        className="h-full transition-all duration-1000 ease-out flex items-center justify-center text-[10px] font-bold text-foreground/70"
+                        style={{
+                          backgroundColor: "#FFD3B6",
+                          width: `${(item.closed / 270) * 100}%`,
+                        }}
+                      >
+                        {item.closed}
+                      </div>
+                      {/* Open Segment (Stacked) */}
+                      <div
+                        className="h-full transition-all duration-1000 ease-out flex items-center justify-center text-[10px] font-bold text-foreground/70 border-l border-white/20"
+                        style={{
+                          backgroundColor: "#A8E6CF",
+                          width: `${(item.open / 270) * 100}%`,
+                        }}
+                      >
+                        {item.open}
+                      </div>
+                      <div className="flex-1" />
+                      <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-all" />
+                    </button>
+                    <div className="w-12 text-right text-xs font-bold text-muted-foreground">{item.total}</div>
+                  </div>
+                ))}
+              </div>
+              {/* Legend for the stacked bars */}
+              <div className="flex items-center gap-4 mt-2 px-16">
+                <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: "#FFD3B6" }} />
+                  <span>Closed</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: "#A8E6CF" }} />
+                  <span>Open</span>
+                </div>
+              </div>
             </div>
 
-            {/* Stats */}
-            <div className="flex flex-col justify-center space-y-4">
-              <div
-                className="rounded-lg border border-border bg-muted/30 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => handleBarClick("Open", 100)}
-              >
-                <div className="text-2xl font-bold" style={{ color: "#A8E6CF" }}>
-                  100
-                </div>
-                <div className="mt-1 text-sm text-muted-foreground">Open Opportunities</div>
-                <div className="mt-2 text-xs text-muted-foreground">₹100 Cr potential</div>
+            {/* Right: Location-wise Opportunities View */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                Location-wise Opportunities
+              </h4>
+              <div className="space-y-4">
+                {locationData.map((item) => (
+                  <div key={item.name} className="group flex items-center gap-4">
+                    <div className="w-16 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      {item.name}
+                    </div>
+                    <button
+                      onClick={() => handleDataClick(item.name, item.total)}
+                      className="relative flex-1 h-8 rounded-sm overflow-hidden bg-muted/20 border border-border/50 transition-all hover:border-primary/50 flex items-center pr-2"
+                    >
+                      {/* Closed Segment (Base) */}
+                      <div
+                        className="h-full transition-all duration-1000 ease-out flex items-center justify-center text-[10px] font-bold text-foreground/70"
+                        style={{
+                          backgroundColor: "#FFD3B6",
+                          width: `${(item.closed / 270) * 100}%`,
+                        }}
+                      >
+                        {item.closed}
+                      </div>
+                      {/* Open Segment (Stacked) */}
+                      <div
+                        className="h-full transition-all duration-1000 ease-out flex items-center justify-center text-[10px] font-bold text-foreground/70 border-l border-white/20"
+                        style={{
+                          backgroundColor: "#A8E6CF",
+                          width: `${(item.open / 270) * 100}%`,
+                        }}
+                      >
+                        {item.open}
+                      </div>
+                      <div className="flex-1" />
+                      <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-all" />
+                    </button>
+                    <div className="w-12 text-right text-xs font-bold text-muted-foreground">{item.total}</div>
+                  </div>
+                ))}
               </div>
-              <div
-                className="rounded-lg border border-border bg-muted/30 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => handleBarClick("Closed", 100)}
-              >
-                <div className="text-2xl font-bold" style={{ color: "#FFD3B6" }}>
-                  100
+              {/* Legend for the stacked bars */}
+              <div className="flex items-center gap-4 mt-2 px-16">
+                <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: "#FFD3B6" }} />
+                  <span>Closed</span>
                 </div>
-                <div className="mt-1 text-sm text-muted-foreground">Closed Opportunities</div>
-                <div className="mt-2 text-xs text-muted-foreground">50% conversion rate</div>
-              </div>
-              <div className="rounded-lg border border-primary/50 bg-primary/5 p-4">
-                <div className="text-sm font-medium text-card-foreground">Pipeline Health</div>
-                <div className="mt-2 h-2 w-full rounded-full bg-muted">
-                  <div className="h-2 w-1/2 rounded-full bg-primary" />
+                <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: "#A8E6CF" }} />
+                  <span>Open</span>
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">50% closure rate</div>
               </div>
             </div>
           </div>
