@@ -77,6 +77,7 @@ export default function DashboardPage() {
                     <SelectValue placeholder="Select Quarter" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="Year 2024 - 2025">Year 2023 - 2024</SelectItem>
                     <SelectItem value="Year 2024 - 2025">Year 2024 - 2025</SelectItem>
                     <SelectItem value="Apr 2025 - Jun 2025">Apr 2025 - Jun 2025</SelectItem>
                     <SelectItem value="Jul 2025 - Sep 2025">Jul 2025 - Sep 2025</SelectItem>
@@ -110,14 +111,14 @@ export default function DashboardPage() {
           {/* Opportunities Module */}
           <OpportunitiesModule />
 
-          {/* Work Force Demand Module */}
+          {/*{/* Work Force Demand Module }
           <WorkForceDemandModule />
 
-          {/* Open Requirements Module */}
+          {/* Open Requirements Module }
           <OpenRequirementsModule />
 
-          {/* Fulfilments Module */}
-          <FulfilmentsModule />
+          {/* Fulfilments Module }
+          <FulfilmentsModule />*/}
 
           {/* Revenue Outlook Module */}
           <RevenueOutlookModule />
