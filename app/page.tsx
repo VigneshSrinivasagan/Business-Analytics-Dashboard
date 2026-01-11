@@ -11,6 +11,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { WorkflowFlowchart } from "@/components/workflow-flowchart"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { MarginModule } from "@/components/margin-module"
 
 export default function DashboardPage() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null)
@@ -107,6 +108,9 @@ export default function DashboardPage() {
         <div className="space-y-8">
           {/* Revenue Module */}
           <RevenueModule onProjectSelect={setSelectedProject} />
+
+          {/* Margin Module */}
+          <MarginModule onProjectSelect={setSelectedProject} />
 
           {/* Opportunities Module */}
           <OpportunitiesModule />
