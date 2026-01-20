@@ -13,6 +13,17 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { MarginModule } from "@/components/margin-module"
 
+const ACCOUNTS = ["Equitable Holdings", "Prudential Insurance", "AIG", "NYL", "GenWok"]
+const SERVICE_LINES = ["Cloud", "AI", "TI", "ESU", "CBO"]
+const QUARTERS = [
+  "Year 2024 - 2025",
+  "Apr 2025 - Jun 2025",
+  "Jul 2025 - Sep 2025",
+  "Oct 2025 - Dec 2025",
+  "Jan 2026 - Mar 2026",
+  "Year 2025 - 2026",
+]
+
 export default function DashboardPage() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null)
   const [selectedAccount, setSelectedAccount] = useState("All")
@@ -60,11 +71,11 @@ export default function DashboardPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All">All</SelectItem>
-                    <SelectItem value="Equitable Holdings">Equitable Holdings</SelectItem>
-                    <SelectItem value="Prudential Insurance">Prudential Insurance</SelectItem>
-                    <SelectItem value="AIG">AIG</SelectItem>
-                    <SelectItem value="NYL">NYL</SelectItem>
-                    <SelectItem value="GenWok">GenWok</SelectItem>
+                    {ACCOUNTS.map((account) => (
+                      <SelectItem key={account} value={account}>
+                        {account}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -78,13 +89,11 @@ export default function DashboardPage() {
                     <SelectValue placeholder="Select Quarter" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Year 2024 - 2025">Year 2023 - 2024</SelectItem>
-                    <SelectItem value="Year 2024 - 2025">Year 2024 - 2025</SelectItem>
-                    <SelectItem value="Apr 2025 - Jun 2025">Apr 2025 - Jun 2025</SelectItem>
-                    <SelectItem value="Jul 2025 - Sep 2025">Jul 2025 - Sep 2025</SelectItem>
-                    <SelectItem value="Oct 2025 - Dec 2025">Oct 2025 - Dec 2025</SelectItem>
-                    <SelectItem value="Jan 2026 - Mar 2026">Jan 2026 - Mar 2026</SelectItem>
-                    <SelectItem value="Year 2025 - 2026">Year 2025 - 2026</SelectItem>
+                    {QUARTERS.map((quarter) => (
+                      <SelectItem key={quarter} value={quarter}>
+                        {quarter}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -99,7 +108,7 @@ export default function DashboardPage() {
 
       <div className="border-b border-border bg-muted/30">
         <div className="mx-auto max-w-[1600px]">
-          <WorkflowFlowchart />
+          <WorkflowFlowchart accounts={ACCOUNTS} />
         </div>
       </div>
 
@@ -107,13 +116,13 @@ export default function DashboardPage() {
       <main className="mx-auto max-w-[1600px] px-6 py-8">
         <div className="space-y-8">
           {/* Revenue Module */}
-          <RevenueModule onProjectSelect={setSelectedProject} />
+          <RevenueModule onProjectSelect={setSelectedProject} accounts={ACCOUNTS} serviceLines={SERVICE_LINES} />
 
           {/* Margin Module */}
-          <MarginModule onProjectSelect={setSelectedProject} />
+          <MarginModule onProjectSelect={setSelectedProject} accounts={ACCOUNTS} serviceLines={SERVICE_LINES} />
 
           {/* Opportunities Module */}
-          <OpportunitiesModule />
+          <OpportunitiesModule accounts={ACCOUNTS} serviceLines={SERVICE_LINES} />
 
           {/*{/* Work Force Demand Module }
           <WorkForceDemandModule />

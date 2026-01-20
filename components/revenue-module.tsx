@@ -6,23 +6,7 @@ import { ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { generateRevenueRecords, type RevenueRecord } from "@/lib/synthetic-data"
-import { Sector } from "recharts" // Correcting the import for Sector. It belongs to recharts, not react-chartjs-2.
-
-const revenueData = [
-  { name: "Cloud", value: 25, color: "var(--chart-1)" },
-  { name: "AI", value: 20, color: "var(--chart-2)" },
-  { name: "TI", value: 20, color: "var(--chart-3)" },
-  { name: "ESU", value: 15, color: "var(--chart-4)" },
-  { name: "CBO", value: 20, color: "var(--chart-5)" },
-]
-
-const accountData = [
-  { name: "Equitable Holdings", value: 30, color: "var(--chart-1)" },
-  { name: "Prudential Insurance", value: 25, color: "var(--chart-2)" },
-  { name: "AIG", value: 20, color: "var(--chart-3)" },
-  { name: "NYL", value: 15, color: "var(--chart-4)" },
-  { name: "GenWok", value: 10, color: "var(--chart-5)" },
-]
+import { Sector } from "recharts"
 
 const getAccountRecords = (name: string, value: number) => {
   return generateRevenueRecords(name, value)
@@ -30,6 +14,8 @@ const getAccountRecords = (name: string, value: number) => {
 
 interface RevenueModuleProps {
   onProjectSelect: (project: string) => void
+  accounts: string[]
+  serviceLines: string[]
 }
 
 const renderActiveShape = (props: any) => {
@@ -77,12 +63,24 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, val
   )
 }
 
-export function RevenueModule({ onProjectSelect }: RevenueModuleProps) {
+export function RevenueModule({ onProjectSelect, accounts, serviceLines }: RevenueModuleProps) {
   const [detailView, setDetailView] = useState<{ isOpen: boolean; division: string; data: RevenueRecord[] }>({
     isOpen: false,
     division: "",
     data: [],
   })
+
+  const accountData = accounts.map((name, idx) => ({
+    name,
+    value: [30, 25, 20, 15, 10][idx] || 10,
+    color: `var(--chart-${(idx % 5) + 1})`,
+  }))
+
+  const revenueData = serviceLines.map((name, idx) => ({
+    name,
+    value: [25, 20, 20, 15, 20][idx] || 20,
+    color: `var(--chart-${(idx % 5) + 1})`,
+  }))
 
   const handleDataClick = (name: string, value: number) => {
     onProjectSelect(name)
@@ -206,30 +204,24 @@ export function RevenueModule({ onProjectSelect }: RevenueModuleProps) {
                     onClick={() => handleDataClick(item.name, item.value)}
                     className="group w-full space-y-1.5 transition-opacity hover:opacity-80"
                   >
-                    <div className="flex items-center justify-between text-xs font-medium px-1">
-                      <span className="truncate">{item.name} Solutions</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold">₹{item.value} Cr</span>
-                        <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-px h-6 w-full rounded-sm overflow-hidden bg-muted/20 border border-border/50">
-                      <div className="relative bg-muted/10 px-2 flex items-center">
-                        <div
-                          className="absolute inset-y-0 left-0 opacity-20 transition-all duration-1000"
-                          style={{ backgroundColor: item.color, width: "100%" }}
-                        />
-                        <span className="relative text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
-                          Target
+                    <div className="flex items-center justify-between text-xs font-medium px-1"></div>
+                    <div className="relative h-8 w-full rounded-sm overflow-hidden bg-muted/20 border border-border/50">
+                      <div
+                        className="absolute inset-y-0 left-0 transition-all duration-1000 ease-out flex items-center px-3"
+                        style={{ backgroundColor: item.color, width: `${(item.value / 30) * 100}%` }}
+                      >
+                        <span className="text-[10px] text-white font-bold whitespace-nowrap opacity-70">
+                          {item.name}
                         </span>
                       </div>
-                      <div className="relative bg-muted/10 px-2 flex items-center">
-                        <div
-                          className="absolute inset-y-0 left-0 transition-all duration-1000 ease-out"
-                          style={{ backgroundColor: item.color, width: "80%" }}
-                        />
-                        <span className="relative text-[10px] text-foreground font-bold ml-auto">
+                      <div className="absolute inset-y-0 left-0 w-full flex items-center justify-center pointer-events-none">
+                        <span className="text-xs font-bold text-muted-foreground">
                           ₹{(item.value * 0.8).toFixed(1)} Cr
+                        </span>
+                      </div>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <span className="text-xs font-bold text-foreground">
+                          {item.value} Cr {">"}
                         </span>
                       </div>
                     </div>

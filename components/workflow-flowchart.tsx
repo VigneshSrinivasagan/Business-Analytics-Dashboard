@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { DetailViewSlide } from "./detail-view-slide"
+import { RequirementsSplitView } from "./requirements-split-view"
 import {
   generateRevenueRecords,
   generateOpportunities,
@@ -15,7 +16,7 @@ interface FlowchartStep {
   description: string
   color: string
   scrollId: string
-  dataType: "revenue" | "opportunities-open" | "opportunities-closed" | "requirements" | "fulfilments" | "margin"
+  dataType: "revenue" | "opportunities-open" | "opportunities-closed" | "requirements" | "fulfilments" | "margin" | "requirements-split"
 }
 
 const flowSteps: FlowchartStep[] = [
@@ -65,7 +66,7 @@ const flowSteps: FlowchartStep[] = [
     description: "Open",
     color: "var(--chart-6)",
     scrollId: "requirements-module",
-    dataType: "requirements",
+    dataType: "requirements-split",
   },
   {
     label: "Requirements",
@@ -77,7 +78,11 @@ const flowSteps: FlowchartStep[] = [
   },
 ]
 
-export function WorkflowFlowchart() {
+interface WorkflowFlowchartProps {
+  accounts: string[]
+}
+
+export function WorkflowFlowchart({ accounts }: WorkflowFlowchartProps) {
   const [detailView, setDetailView] = useState<{
     isOpen: boolean
     title: string
@@ -89,6 +94,8 @@ export function WorkflowFlowchart() {
     data: [],
     columns: [],
   })
+
+  const [showRequirementsSplit, setShowRequirementsSplit] = useState(false)
 
   const handleStepClick = (step: FlowchartStep) => {
     let data: any[] = []
@@ -110,7 +117,7 @@ export function WorkflowFlowchart() {
         break
       case "opportunities-open":
       case "opportunities-closed":
-        const status = step.dataType === "opportunities-closed" ? "Closed" : "In Progress"
+        const status = step.dataType === "opportunities-closed" ? "Closed" : "Open"
         title = `${status} Opportunities Details`
         data = generateOpportunities(50, status)
         columns = [
@@ -134,6 +141,9 @@ export function WorkflowFlowchart() {
           { key: "openedDate", label: "Opened Date" },
         ]
         break
+      case "requirements-split":
+        setShowRequirementsSplit(true)
+        return
       case "fulfilments":
         title = "Fulfilment Details"
         data = generateFulfilments(40, "MOT", "Closed")
@@ -197,6 +207,12 @@ export function WorkflowFlowchart() {
         title={detailView.title}
         data={detailView.data}
         columns={detailView.columns}
+      />
+
+      <RequirementsSplitView
+        isOpen={showRequirementsSplit}
+        onClose={() => setShowRequirementsSplit(false)}
+        accounts={accounts}
       />
     </div>
   )

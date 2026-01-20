@@ -8,33 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ChevronRight } from "lucide-react"
 
-const accountData = [
-  { name: "Equitable Holdings", total: 150, closed: 90, inProgress: 40, notStarted: 20 },
-  { name: "Prudential Insurance", total: 180, closed: 130, inProgress: 30, notStarted: 20 },
-  { name: "AIG", total: 160, closed: 110, inProgress: 30, notStarted: 20 },
-  { name: "NYL", total: 200, closed: 150, inProgress: 30, notStarted: 20 },
-  { name: "GenWok", total: 160, closed: 120, inProgress: 20, notStarted: 20 },
-]
-
-const serviceLineData = [
-  { name: "Cloud", total: 180, closed: 130, inProgress: 30, notStarted: 20 },
-  { name: "AI", total: 170, closed: 120, inProgress: 30, notStarted: 20 },
-  { name: "TI", total: 160, closed: 110, inProgress: 30, notStarted: 20 },
-  { name: "ESU", total: 170, closed: 120, inProgress: 30, notStarted: 20 },
-  { name: "CBO", total: 170, closed: 120, inProgress: 30, notStarted: 20 },
-]
-
-const opportunityColumns = [
-  { key: "id", label: "ID" },
-  { key: "name", label: "Opportunity Name" },
-  { key: "client", label: "Client" },
-  { key: "value", label: "Value (Cr)" },
-  { key: "status", label: "Status" },
-  { key: "division", label: "Division" },
-  { key: "owner", label: "Owner" },
-  { key: "createdDate", label: "Created Date" },
-  { key: "closureDate", label: "Closure Date" },
-]
+interface OpportunitiesModuleProps {
+  accounts: string[]
+  serviceLines: string[]
+}
 
 const COLORS = {
   total: "hsl(199, 89%, 48%)", // Sky Blue
@@ -43,7 +20,23 @@ const COLORS = {
   notStarted: "hsl(283, 44%, 66%)", // Soft Lavender
 }
 
-export function OpportunitiesModule() {
+export function OpportunitiesModule({ accounts, serviceLines }: OpportunitiesModuleProps) {
+  const accountData = accounts.map((name) => ({
+    name,
+    total: 150,
+    closed: Math.floor(150 * 0.7),
+    inProgress: Math.floor(150 * 0.2),
+    notStarted: Math.floor(150 * 0.1),
+  }))
+
+  const serviceLineData = serviceLines.map((name) => ({
+    name,
+    total: 170,
+    closed: Math.floor(170 * 0.7),
+    inProgress: Math.floor(170 * 0.18),
+    notStarted: Math.floor(170 * 0.12),
+  }))
+
   const [accountAnimatedData, setAccountAnimatedData] = useState(
     accountData.map((d) => ({ ...d, total: 0, closed: 0, inProgress: 0, notStarted: 0 })),
   )
@@ -153,6 +146,18 @@ export function OpportunitiesModule() {
     }
   }
 
+  const opportunityColumns = [
+    { key: "id", label: "ID" },
+    { key: "name", label: "Opportunity Name" },
+    { key: "client", label: "Client" },
+    { key: "value", label: "Value (Cr)" },
+    { key: "status", label: "Status" },
+    { key: "division", label: "Division" },
+    { key: "owner", label: "Owner" },
+    { key: "createdDate", label: "Created Date" },
+    { key: "closureDate", label: "Closure Date" },
+  ]
+
   return (
     <Card id="opportunities-module">
       <CardHeader>
@@ -194,7 +199,7 @@ export function OpportunitiesModule() {
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "var(--muted)",
+                      backgroundColor: "var(--color-card)",
                       border: "1px solid var(--color-border)",
                       borderRadius: "12px",
                       color: "var(--color-foreground)",
@@ -270,7 +275,7 @@ export function OpportunitiesModule() {
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "var(--muted)",
+                      backgroundColor: "var(--color-card)",
                       border: "1px solid var(--color-border)",
                       borderRadius: "12px",
                       color: "var(--color-foreground)",

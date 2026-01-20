@@ -7,39 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { generateRevenueRecords, type RevenueRecord } from "@/lib/synthetic-data"
 
-const marginDataServiceLines = [
-  { name: "Cloud", value: 20, color: "var(--chart-1)" },
-  { name: "AI", value: 16, color: "var(--chart-2)" },
-  { name: "TI", value: 16, color: "var(--chart-3)" },
-  { name: "ESU", value: 12, color: "var(--chart-4)" },
-  { name: "CBO", value: 16, color: "var(--chart-5)" },
-]
-
-const marginDataAccounts = [
-  { name: "Equitable Holdings", value: 24, color: "var(--chart-1)" },
-  { name: "Prudential Insurance", value: 20, color: "var(--chart-2)" },
-  { name: "AIG", value: 16, color: "var(--chart-3)" },
-  { name: "NYL", value: 12, color: "var(--chart-4)" },
-  { name: "GenWok", value: 8, color: "var(--chart-5)" },
-]
-
 interface MarginModuleProps {
   onProjectSelect: (project: string) => void
+  accounts: string[]
+  serviceLines: string[]
 }
 
-const marginColumns = [
-  { key: "id", label: "Project ID" },
-  { key: "projectName", label: "Project Name" },
-  { key: "client", label: "Client" },
-  { key: "value", label: "Margin (Cr)" },
-  { key: "status", label: "Status" },
-  { key: "projectManager", label: "Project Manager" },
-  { key: "teamSize", label: "Team Size" },
-  { key: "startDate", label: "Start Date" },
-  { key: "endDate", label: "End Date" },
-]
-
-export function MarginModule({ onProjectSelect }: MarginModuleProps) {
+export function MarginModule({ onProjectSelect, accounts, serviceLines }: MarginModuleProps) {
   const [detailView, setDetailView] = useState<{ isOpen: boolean; division: string; data: RevenueRecord[] }>({
     isOpen: false,
     division: "",
@@ -80,6 +54,30 @@ export function MarginModule({ onProjectSelect }: MarginModuleProps) {
       setSortDirection("asc")
     }
   }
+
+  const marginDataAccounts = accounts.map((name, idx) => ({
+    name,
+    value: [24, 20, 16, 12, 8][idx] || 8,
+    color: `var(--chart-${(idx % 5) + 1})`,
+  }))
+
+  const marginDataServiceLines = serviceLines.map((name, idx) => ({
+    name,
+    value: [20, 16, 16, 12, 16][idx] || 16,
+    color: `var(--chart-${(idx % 5) + 1})`,
+  }))
+
+  const marginColumns = [
+    { key: "id", label: "Project ID" },
+    { key: "projectName", label: "Project Name" },
+    { key: "client", label: "Client" },
+    { key: "value", label: "Margin (Cr)" },
+    { key: "status", label: "Status" },
+    { key: "projectManager", label: "Project Manager" },
+    { key: "teamSize", label: "Team Size" },
+    { key: "startDate", label: "Start Date" },
+    { key: "endDate", label: "End Date" },
+  ]
 
   return (
     <Card id="margin-module">
