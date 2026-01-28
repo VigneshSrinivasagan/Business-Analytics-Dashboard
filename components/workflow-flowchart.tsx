@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { DetailViewSlide } from "./detail-view-slide"
 import { RequirementsSplitView } from "./requirements-split-view"
+import { TCVView } from "./tcv-view"
 import {
   generateRevenueRecords,
   generateOpportunities,
@@ -16,7 +17,7 @@ interface FlowchartStep {
   description: string
   color: string
   scrollId: string
-  dataType: "revenue" | "opportunities-open" | "opportunities-closed" | "requirements" | "fulfilments" | "margin" | "requirements-split"
+  dataType: "revenue" | "opportunities-open" | "opportunities-closed" | "requirements" | "fulfilments" | "margin" | "requirements-split" | "tcv"
 }
 
 const flowSteps: FlowchartStep[] = [
@@ -76,6 +77,14 @@ const flowSteps: FlowchartStep[] = [
     scrollId: "fulfilments-module",
     dataType: "fulfilments",
   },
+  {
+    label: "TCV",
+    value: "120",
+    description: "Total Contract Value",
+    color: "var(--chart-8)",
+    scrollId: "tcv-view",
+    dataType: "tcv",
+  },
 ]
 
 interface WorkflowFlowchartProps {
@@ -96,6 +105,7 @@ export function WorkflowFlowchart({ accounts }: WorkflowFlowchartProps) {
   })
 
   const [showRequirementsSplit, setShowRequirementsSplit] = useState(false)
+  const [showTCVView, setShowTCVView] = useState(false)
 
   const handleStepClick = (step: FlowchartStep) => {
     let data: any[] = []
@@ -143,6 +153,9 @@ export function WorkflowFlowchart({ accounts }: WorkflowFlowchartProps) {
         break
       case "requirements-split":
         setShowRequirementsSplit(true)
+        return
+      case "tcv":
+        setShowTCVView(true)
         return
       case "fulfilments":
         title = "Fulfilment Details"
@@ -213,6 +226,11 @@ export function WorkflowFlowchart({ accounts }: WorkflowFlowchartProps) {
         isOpen={showRequirementsSplit}
         onClose={() => setShowRequirementsSplit(false)}
         accounts={accounts}
+      />
+
+      <TCVView
+        isOpen={showTCVView}
+        onClose={() => setShowTCVView(false)}
       />
     </div>
   )
