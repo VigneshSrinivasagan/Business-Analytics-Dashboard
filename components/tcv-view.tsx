@@ -42,6 +42,15 @@ const serviceLineOpportunities = [
   { name: "TI", value: 19.41, count: 16 },
 ]
 
+// Opportunities not acted upon for 90+ days
+const opportunitiesOver90Days = [
+  { label: "00 - Suspecting", count: 15, color: "#A8D5E5" },
+  { label: "01 - Prospecting", count: 25, color: "#D4A5A5" },
+  { label: "02 - EOI/RFI", count: 18, color: "#C9A5C2" },
+  { label: "03 - RFI Submitted", count: 12, color: "#8B6B47" },
+  { label: "04 - RFP Progress", count: 22, color: "#6B5B95" },
+]
+
 const barColors = {
   blue: "#5B9FBB",
   orange: "#FF9F43",
@@ -101,112 +110,145 @@ export function TCVView({ isOpen, onClose }: TCVViewProps) {
           </CardHeader>
           <CardContent>
             {!detailView.isOpen ? (
-              <div className="space-y-12">
-                {/* Pipeline Sales Stage CRM View */}
-                <div className="space-y-6">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-primary" />
-                    Pipeline Sales Stage CRM View
-                  </h3>
+              <div className="space-y-8">
+                {/* Top Segment: Two Pie Charts */}
+                <div className="grid gap-8 lg:grid-cols-2">
+                  {/* Left: Opportunity Distribution Pie Chart */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-primary" />
+                      Opportunity Distribution
+                    </h4>
+                    <ResponsiveContainer width="100%" height={280}>
+                      <PieChart>
+                        <Pie
+                          data={pipelineStages.filter((s) => s.count > 0)}
+                          dataKey="count"
+                          nameKey="label"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          label={({ label, percent }) => `${label.split(" - ")[1]}: ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {pipelineStages.map((stage) => (
+                            <Cell key={stage.label} fill={stage.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "0.5rem",
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
 
-                  <div className="grid lg:grid-cols-3 gap-6">
-                    {/* Segmented Bar Chart */}
-                    <div className="lg:col-span-2">
-                      <h4 className="text-sm font-medium mb-4 text-muted-foreground">Stage-wise Distribution</h4>
-                      <div className="space-y-3">
-                        {pipelineStages.map((stage) => (
-                          <button
-                            key={stage.label}
-                            onClick={() => handleBarClick(stage.label, stage.count)}
-                            className="w-full text-left group hover:opacity-80 transition-opacity"
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-xs font-medium text-foreground truncate">{stage.label}</span>
-                              <span className="text-xs font-bold text-muted-foreground ml-2 flex-shrink-0">{stage.percentage}%</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <div className="relative flex-1 h-8 rounded-sm overflow-hidden bg-muted/20 border border-border/50">
-                                <div
-                                  className="absolute inset-y-0 left-0 transition-all duration-1000 ease-out flex items-center justify-center"
-                                  style={{ backgroundColor: stage.color, width: `${stage.percentage * 3}%` }}
-                                >
-                                  {stage.percentage > 5 && (
-                                    <span className="text-xs font-bold text-foreground">₹{stage.value.toFixed(2)}M</span>
-                                  )}
-                                </div>
-                              </div>
-                              <span className="text-xs font-bold text-foreground whitespace-nowrap">{stage.count}</span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Pie Chart */}
-                    <div>
-                      <h4 className="text-sm font-medium mb-4 text-muted-foreground">Opportunity Distribution</h4>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                            data={pipelineStages.filter((s) => s.count > 0)}
-                            dataKey="count"
-                            nameKey="label"
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={80}
-                            label={({ label, percent }) => `${label.split(" - ")[1]}: ${(percent * 100).toFixed(0)}%`}
-                          >
-                            {pipelineStages.map((stage) => (
-                              <Cell key={stage.label} fill={stage.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: "hsl(var(--card))",
-                              border: "1px solid hsl(var(--border))",
-                              borderRadius: "0.5rem",
-                            }}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
+                  {/* Right: 90+ Days Not Acted Upon Pie Chart */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-primary" />
+                      Opportunities not acted Upon (90+ Days)
+                    </h4>
+                    <ResponsiveContainer width="100%" height={280}>
+                      <PieChart>
+                        <Pie
+                          data={opportunitiesOver90Days}
+                          dataKey="count"
+                          nameKey="label"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          label={({ label, count }) => `${label.split(" - ")[1]}: ${count}`}
+                        >
+                          {opportunitiesOver90Days.map((opp) => (
+                            <Cell key={opp.label} fill={opp.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "0.5rem",
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
 
-                {/* Service Line Wise Open Opportunities */}
-                <div className="space-y-6">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-primary" />
-                    Service Line-wise Open Opportunities
-                  </h3>
-
-                  <div className="space-y-2">
-                    {[{ name: "Total", value: 757.79, count: 626 }, ...serviceLineOpportunities].map((line, idx) => (
-                      <button
-                        key={line.name}
-                        onClick={() => handleBarClick(`${line.name}`, line.count)}
-                        className="w-full text-left group hover:opacity-80 transition-opacity"
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className={`text-xs font-${idx === 0 ? "bold" : "medium"} text-foreground`}>
-                            {line.name}
-                          </span>
-                          <div className="flex items-center gap-4 text-xs">
-                            <span className="font-bold text-foreground">₹{line.value.toFixed(2)}M</span>
-                            <span className="font-bold text-foreground w-12 text-right">{line.count}</span>
+                {/* Bottom Segment: Two Bar Charts */}
+                <div className="grid gap-8 lg:grid-cols-2">
+                  {/* Left: Pipeline Sales Stage CRM View */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-primary" />
+                      Pipeline Sales Stage CRM View
+                    </h4>
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {pipelineStages.map((stage) => (
+                        <button
+                          key={stage.label}
+                          onClick={() => handleBarClick(stage.label, stage.count)}
+                          className="w-full text-left group hover:opacity-80 transition-opacity"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-medium text-foreground truncate">{stage.label}</span>
+                            <span className="text-xs font-bold text-muted-foreground ml-2 flex-shrink-0">{stage.percentage}%</span>
                           </div>
-                        </div>
-                        <div className="relative h-6 w-full rounded-sm overflow-hidden bg-muted/20 border border-border/50">
-                          <div
-                            className="absolute inset-y-0 left-0 transition-all duration-1000 ease-out"
-                            style={{
-                              backgroundColor: idx === 0 ? barColors.blue : [barColors.mint, barColors.peach, barColors.lavender, barColors.orange, barColors.green][idx % 5],
-                              width: `${(line.value / 757.79) * 100}%`,
-                            }}
-                          />
-                        </div>
-                      </button>
-                    ))}
+                          <div className="flex items-center gap-3">
+                            <div className="relative flex-1 h-6 rounded-sm overflow-hidden bg-muted/20 border border-border/50">
+                              <div
+                                className="absolute inset-y-0 left-0 transition-all duration-1000 ease-out flex items-center justify-center"
+                                style={{ backgroundColor: stage.color, width: `${stage.percentage * 3}%` }}
+                              >
+                                {stage.percentage > 8 && (
+                                  <span className="text-xs font-bold text-foreground">₹{stage.value.toFixed(1)}M</span>
+                                )}
+                              </div>
+                            </div>
+                            <span className="text-xs font-bold text-foreground whitespace-nowrap">{stage.count}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Right: Service Line Wise Open Opportunities */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-primary" />
+                      Service Line-wise Open Opportunities
+                    </h4>
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {[{ name: "Total", value: 757.79, count: 626 }, ...serviceLineOpportunities].map((line, idx) => (
+                        <button
+                          key={line.name}
+                          onClick={() => handleBarClick(`${line.name}`, line.count)}
+                          className="w-full text-left group hover:opacity-80 transition-opacity"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className={`text-xs font-${idx === 0 ? "bold" : "medium"} text-foreground truncate`}>
+                              {line.name}
+                            </span>
+                            <div className="flex items-center gap-2 text-xs flex-shrink-0">
+                              <span className="font-bold text-foreground">₹{line.value.toFixed(1)}M</span>
+                              <span className="font-bold text-foreground w-10 text-right">{line.count}</span>
+                            </div>
+                          </div>
+                          <div className="relative h-6 w-full rounded-sm overflow-hidden bg-muted/20 border border-border/50">
+                            <div
+                              className="absolute inset-y-0 left-0 transition-all duration-1000 ease-out"
+                              style={{
+                                backgroundColor: idx === 0 ? barColors.blue : [barColors.mint, barColors.peach, barColors.lavender, barColors.orange, barColors.green][idx % 5],
+                                width: `${(line.value / 757.79) * 100}%`,
+                              }}
+                            />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
