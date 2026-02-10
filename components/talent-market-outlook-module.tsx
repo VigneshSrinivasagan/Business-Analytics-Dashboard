@@ -13,7 +13,7 @@ const talentOutlookData = {
   successfulMappings: 76,
 }
 
-// Successful associate mappings data for visualization
+// Successful associate mappings data for visualization - Division-wise
 const mappingsData = [
   { division: "Cloud", mapped: 18, unmapped: 4 },
   { division: "AI", mapped: 12, unmapped: 3 },
@@ -23,10 +23,33 @@ const mappingsData = [
   { division: "ADM", mapped: 7, unmapped: 1 },
 ]
 
+// Successful associate mappings data - Account-wise
+const accountMappingsData = [
+  { account: "Equitable Holdings", mapped: 22, unmapped: 5 },
+  { account: "Prudential Insurance", mapped: 18, unmapped: 4 },
+  { account: "AIG", mapped: 16, unmapped: 3 },
+  { account: "NYL", mapped: 14, unmapped: 2 },
+  { account: "GenWok", mapped: 6, unmapped: 2 },
+]
+
 const mappingSuccessRate = (talentOutlookData.successfulMappings / talentOutlookData.releaseCount) * 100
 
 export function TalentMarketOutlookModule() {
   const [showDashboardView, setShowDashboardView] = useState(false)
+  const [selectedType, setSelectedType] = useState<"division" | "account" | null>(null)
+  const [selectedName, setSelectedName] = useState<string>("")
+
+  const handleDivisionClick = (division: string) => {
+    setSelectedType("division")
+    setSelectedName(division)
+    setShowDashboardView(true)
+  }
+
+  const handleAccountClick = (account: string) => {
+    setSelectedType("account")
+    setSelectedName(account)
+    setShowDashboardView(true)
+  }
 
   return (
     <>
@@ -77,43 +100,120 @@ export function TalentMarketOutlookModule() {
               </div>
             </div>
 
-            {/* Bottom Section: Successful Mappings Chart */}
-            <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">Successful Associate Mappings</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Division-wise mapping success and pending assignments</p>
+            {/* Bottom Section: Successful Mappings Charts - Two Equal Boxes */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Left Box: Division-wise Mappings */}
+              <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">Division-wise Mappings</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Mapping success and pending assignments</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold text-primary">{talentOutlookData.successfulMappings}</div>
-                  <div className="text-sm text-muted-foreground">{mappingSuccessRate.toFixed(1)}% mapped</div>
-                </div>
+
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={mappingsData} margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis
+                      dataKey="division"
+                      stroke="var(--border)"
+                      tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis stroke="var(--border)" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
+                    <Tooltip
+                      cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "0.375rem",
+                      }}
+                      onClick={(data) => handleDivisionClick(data.payload.division)}
+                    />
+                    <Legend
+                      wrapperStyle={{ paddingTop: "20px" }}
+                      formatter={(value) => <span style={{ fontSize: "12px" }}>{value}</span>}
+                    />
+                    <Bar
+                      dataKey="mapped"
+                      fill="#A8E6CF"
+                      name="Successfully Mapped"
+                      radius={[4, 4, 0, 0]}
+                      onClick={(data) => handleDivisionClick(data.division)}
+                      className="cursor-pointer"
+                    />
+                    <Bar
+                      dataKey="unmapped"
+                      fill="#FFB6C1"
+                      name="Pending Assignment"
+                      radius={[4, 4, 0, 0]}
+                      onClick={(data) => handleDivisionClick(data.division)}
+                      className="cursor-pointer"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
 
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={mappingsData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="division" stroke="var(--border)" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
-                  <YAxis stroke="var(--border)" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
-                  <Tooltip
-                    cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "0.375rem",
-                    }}
-                  />
-                  <Legend
-                    wrapperStyle={{ paddingTop: "20px" }}
-                    formatter={(value) => <span style={{ fontSize: "12px" }}>{value}</span>}
-                  />
-                  <Bar dataKey="mapped" fill="#A8E6CF" name="Successfully Mapped" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="unmapped" fill="#FFB6C1" name="Pending Assignment" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {/* Right Box: Account-wise Mappings */}
+              <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">Account-wise Mappings</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Mapping success and pending assignments</p>
+                  </div>
+                </div>
 
-              {/* Overall Performance Summary */}
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={accountMappingsData} margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis
+                      dataKey="account"
+                      stroke="var(--border)"
+                      tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis stroke="var(--border)" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
+                    <Tooltip
+                      cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "0.375rem",
+                      }}
+                      onClick={(data) => handleAccountClick(data.payload.account)}
+                    />
+                    <Legend
+                      wrapperStyle={{ paddingTop: "20px" }}
+                      formatter={(value) => <span style={{ fontSize: "12px" }}>{value}</span>}
+                    />
+                    <Bar
+                      dataKey="mapped"
+                      fill="#A8E6CF"
+                      name="Successfully Mapped"
+                      radius={[4, 4, 0, 0]}
+                      onClick={(data) => handleAccountClick(data.account)}
+                      className="cursor-pointer"
+                    />
+                    <Bar
+                      dataKey="unmapped"
+                      fill="#FFB6C1"
+                      name="Pending Assignment"
+                      radius={[4, 4, 0, 0]}
+                      onClick={(data) => handleAccountClick(data.account)}
+                      className="cursor-pointer"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Overall Performance Summary */}
+            <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-6">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-lg bg-background/50 p-4 border border-border">
                   <div className="text-xs font-medium text-muted-foreground">Mapping Efficiency</div>
                   <div className="mt-2 flex items-baseline gap-2">
@@ -132,10 +232,11 @@ export function TalentMarketOutlookModule() {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-        <TalentDashboardView isOpen={showDashboardView} onClose={() => setShowDashboardView(false)} />
-      </>
+      <TalentDashboardView isOpen={showDashboardView} onClose={() => setShowDashboardView(false)} />
+    </>
   )
 }

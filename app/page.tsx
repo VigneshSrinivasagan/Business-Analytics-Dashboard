@@ -12,6 +12,7 @@ import { WorkflowFlowchart } from "@/components/workflow-flowchart"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { MarginModule } from "@/components/margin-module"
+import { TalentMarketOutlookModule } from "@/components/talent-market-outlook-module"
 
 const ACCOUNTS = ["Equitable Holdings", "Prudential Insurance", "AIG", "NYL", "GenWok"]
 const SERVICE_LINES = ["Cloud", "AI", "TI", "ESU", "CBO"]
@@ -25,7 +26,6 @@ const QUARTERS = [
 ]
 
 export default function DashboardPage() {
-  const [selectedProject, setSelectedProject] = useState<string | null>(null)
   const [selectedAccount, setSelectedAccount] = useState("All")
   const [selectedQuarter, setSelectedQuarter] = useState("")
 
@@ -116,25 +116,28 @@ export default function DashboardPage() {
       <main className="mx-auto max-w-[1600px] px-6 py-8">
         <div className="space-y-8">
           {/* Revenue Module */}
-          <RevenueModule onProjectSelect={setSelectedProject} accounts={ACCOUNTS} serviceLines={SERVICE_LINES} />
+          <RevenueModule onProjectSelect={() => {}} accounts={ACCOUNTS} serviceLines={SERVICE_LINES} />
 
           {/* Margin Module */}
-          <MarginModule onProjectSelect={setSelectedProject} accounts={ACCOUNTS} serviceLines={SERVICE_LINES} />
+          <MarginModule onProjectSelect={() => {}} accounts={ACCOUNTS} serviceLines={SERVICE_LINES} />
 
           {/* Opportunities Module */}
           <OpportunitiesModule accounts={ACCOUNTS} serviceLines={SERVICE_LINES} />
 
-          {/*{/* Work Force Demand Module }
+          {/* Work Force Demand Module */}
           <WorkForceDemandModule />
 
-          {/* Open Requirements Module }
+          {/* Open Requirements Module */}
           <OpenRequirementsModule />
 
-          {/* Fulfilments Module }
-          <FulfilmentsModule />*/}
+          {/* Fulfilments Module */}
+          <FulfilmentsModule />
 
           {/* Revenue Outlook Module */}
           <RevenueOutlookModule />
+
+          {/* Talent Market Outlook Module */}
+          <TalentMarketOutlookModule />
         </div>
       </main>
     </div>
