@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ChevronRight } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, PieChart, Pie } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, PieChart, Pie, Label } from "recharts"
 
 interface TCVViewProps {
   isOpen: boolean
@@ -24,6 +24,19 @@ const pipelineStages = [
   { label: "07 - Selected", value: 79.56, percentage: 11, count: 160, color: "#A8E6CF" },
   { label: "08 - Contract Negotiation", value: 32.61, percentage: 4, count: 42, color: "#52B788" },
   { label: "09 - Closed/WON", value: 0.0, percentage: 0, count: 0, color: "#1B4332" },
+]
+
+// Grouped bar chart data - Previous Month vs Current Month
+const opportunityDistributionData = [
+  { stage: "00-Suspecting", prevMonth: 72, currMonth: 96, color: "#A8D5E5" },
+  { stage: "01-Prospecting", prevMonth: 45, currMonth: 60, color: "#D4A5A5" },
+  { stage: "02-EOI/RFI", prevMonth: 28, currMonth: 36, color: "#C9A5C2" },
+  { stage: "03-RFI Submitted", prevMonth: 18, currMonth: 22, color: "#8B6B47" },
+  { stage: "04-RFP Progress", prevMonth: 12, currMonth: 17, color: "#6B5B95" },
+  { stage: "05-RFP Submitted", prevMonth: 25, currMonth: 32, color: "#F4D35E" },
+  { stage: "06-Short Listed", prevMonth: 10, currMonth: 13, color: "#8BA39C" },
+  { stage: "07-Selected", prevMonth: 145, currMonth: 160, color: "#A8E6CF" },
+  { stage: "08-Contract Negotiation", prevMonth: 38, currMonth: 42, color: "#52B788" },
 ]
 
 // Service line wise opportunities
@@ -70,10 +83,11 @@ export function TCVView({ isOpen, onClose }: TCVViewProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
-  const handleBarClick = (stageName: string, count: number) => {
+  const handleBarClick = (stageName: string, count: number, month?: string) => {
+    const monthSuffix = month ? ` (${month})` : ""
     setDetailView({
       isOpen: true,
-      title: `${stageName} - Details`,
+      title: `${stageName}${monthSuffix} - Details (${count} opportunities)`,
       data: Array.from({ length: count }, (_, i) => ({
         id: `OPP-${i + 1}`,
         stage: stageName,
@@ -111,47 +125,71 @@ export function TCVView({ isOpen, onClose }: TCVViewProps) {
           <CardContent>
             {!detailView.isOpen ? (
               <div className="space-y-8">
-                {/* Top Segment: Two Pie Charts */}
+                {/* Top Segment: Grouped Bar Chart and 90+ Days Pie */}
                 <div className="grid gap-8 lg:grid-cols-2">
-                  {/* Left: Opportunity Distribution Pie Chart */}
+                  {/* Left: Grouped Bar Chart - Previous vs Current Month */}
                   <div className="space-y-4">
                     <h4 className="text-sm font-semibold flex items-center gap-2">
                       <div className="h-2 w-2 rounded-full bg-primary" />
-                      Opportunity Distribution
+                      Opportunity Distribution - Month Comparison
                     </h4>
-                    <ResponsiveContainer width="100%" height={280}>
-                      <PieChart>
-                        <Pie
-                          data={pipelineStages.filter((s) => s.count > 0)}
-                          dataKey="count"
-                          nameKey="label"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          label={({ label, percent }) => `${label.split(" - ")[1]}: ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {pipelineStages.map((stage) => (
-                            <Cell key={stage.label} fill={stage.color} />
-                          ))}
-                        </Pie>
+                    <ResponsiveContainer width="100%" height={320}>
+                      <BarChart
+                        data={opportunityDistributionData}
+                        margin={{ top: 20, right: 30, left: 0, bottom: 60 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                        <XAxis
+                          dataKey="stage"
+                          angle={-45}
+                          textAnchor="end"
+                          height={100}
+                          tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                          stroke="var(--border)"
+                        />
+                        <YAxis stroke="var(--border)" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
                         <Tooltip
+                          cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
                           contentStyle={{
                             backgroundColor: "hsl(var(--card))",
                             border: "1px solid hsl(var(--border))",
-                            borderRadius: "0.5rem",
+                            borderRadius: "0.375rem",
                           }}
                         />
-                      </PieChart>
+                        <Legend
+                          wrapperStyle={{ paddingTop: "20px" }}
+                          iconType="square"
+                          formatter={(value) => <span style={{ fontSize: "12px" }}>{value}</span>}
+                        />
+                        <Bar
+                          dataKey="prevMonth"
+                          fill="#FFB6C1"
+                          name="Previous Month"
+                          onClick={(data) => handleBarClick(data.stage, data.prevMonth, "Prev Month")}
+                          className="cursor-pointer"
+                          radius={[4, 4, 0, 0]}
+                          label={{ position: "top", fill: "var(--foreground)", fontSize: 12, fontWeight: "bold" }}
+                        />
+                        <Bar
+                          dataKey="currMonth"
+                          fill="#98D8C8"
+                          name="Current Month"
+                          onClick={(data) => handleBarClick(data.stage, data.currMonth, "Curr Month")}
+                          className="cursor-pointer"
+                          radius={[4, 4, 0, 0]}
+                          label={{ position: "top", fill: "var(--foreground)", fontSize: 12, fontWeight: "bold" }}
+                        />
+                      </BarChart>
                     </ResponsiveContainer>
                   </div>
 
-                  {/* Right: 90+ Days Not Acted Upon Pie Chart */}
+                  {/* Right: 90+ Days Not Acted Upon Pie Chart (Clickable) */}
                   <div className="space-y-4">
                     <h4 className="text-sm font-semibold flex items-center gap-2">
                       <div className="h-2 w-2 rounded-full bg-primary" />
-                      Opportunities not acted Upon (90+ Days)
+                      Opportunities Not Acted Upon (90+ Days)
                     </h4>
-                    <ResponsiveContainer width="100%" height={280}>
+                    <ResponsiveContainer width="100%" height={320}>
                       <PieChart>
                         <Pie
                           data={opportunitiesOver90Days}
@@ -161,6 +199,8 @@ export function TCVView({ isOpen, onClose }: TCVViewProps) {
                           cy="50%"
                           outerRadius={80}
                           label={({ label, count }) => `${label.split(" - ")[1]}: ${count}`}
+                          onClick={(entry) => handleBarClick(entry.label, entry.count, "90+ Days")}
+                          style={{ cursor: "pointer" }}
                         >
                           {opportunitiesOver90Days.map((opp) => (
                             <Cell key={opp.label} fill={opp.color} />
