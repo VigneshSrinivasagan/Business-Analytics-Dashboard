@@ -195,38 +195,64 @@ export function RevenueModule({ onProjectSelect, accounts, serviceLines }: Reven
             <div className="flex flex-col gap-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
               <h4 className="text-sm font-semibold flex items-center gap-2 sticky top-0 bg-card z-10 py-1">
                 <div className="h-2 w-2 rounded-full bg-primary" />
-                Serviceline-wise Revenue
+                Service line-wise Revenue
               </h4>
-              <div className="space-y-4">
-                {revenueData.map((item) => (
-                  <button
-                    key={item.name}
-                    onClick={() => handleDataClick(item.name, item.value)}
-                    className="group w-full space-y-1.5 transition-opacity hover:opacity-80"
-                  >
-                    <div className="flex items-center justify-between text-xs font-medium px-1"></div>
-                    <div className="relative h-8 w-full rounded-sm overflow-hidden bg-muted/20 border border-border/50">
-                      <div
-                        className="absolute inset-y-0 left-0 transition-all duration-1000 ease-out flex items-center px-3"
-                        style={{ backgroundColor: item.color, width: `${(item.value / 30) * 100}%` }}
-                      >
-                        <span className="text-[10px] text-white font-bold whitespace-nowrap opacity-70">
-                          {item.name}
-                        </span>
+              <div className="space-y-6">
+                {revenueData.map((item) => {
+                  const achievedValue = item.value * 0.8
+                  const targetValue = item.value
+                  const percentageAchieved = (achievedValue / targetValue) * 100
+                  
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => handleDataClick(item.name, item.value)}
+                      className="group w-full space-y-2 transition-opacity hover:opacity-80"
+                    >
+                      <div className="flex items-center justify-between text-xs font-medium px-1">
+                        <span className="truncate font-semibold text-foreground">{item.name}</span>
                       </div>
-                      <div className="absolute inset-y-0 left-0 w-full flex items-center justify-center pointer-events-none">
-                        <span className="text-xs font-bold text-muted-foreground">
-                          ₹{(item.value * 0.8).toFixed(1)} Cr
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 relative">
+                          {/* Background bar container */}
+                          <div className="relative h-6 w-full rounded-sm overflow-hidden bg-muted/30 border border-border/50">
+                            {/* Gradient fill bar */}
+                            <div
+                              className="absolute inset-y-0 left-0 transition-all duration-1000 ease-out rounded-sm flex items-center px-2"
+                              style={{
+                                width: `${percentageAchieved}%`,
+                                background: `linear-gradient(to right, ${item.color}40, ${item.color}ff)`,
+                              }}
+                            >
+                              {/* Achieved value display inside bar */}
+                              {percentageAchieved > 25 && (
+                                <span className="text-xs font-bold text-foreground whitespace-nowrap">
+                                  ₹{achievedValue.toFixed(1)} Cr
+                                </span>
+                              )}
+                            </div>
+                            
+                            {/* Achieved value display outside bar (when bar is small) */}
+                            {percentageAchieved <= 25 && (
+                              <div className="absolute inset-y-0 left-0 flex items-center px-2">
+                                <span className="text-xs font-bold text-foreground whitespace-nowrap">
+                                  ₹{achievedValue.toFixed(1)} Cr
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Target value display outside and to the right of bar */}
+                        <div className="whitespace-nowrap min-w-max">
+                          <span className="text-xs font-semibold text-muted-foreground">
+                            ₹{targetValue} Cr
+                          </span>
+                        </div>
                       </div>
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <span className="text-xs font-bold text-foreground">
-                          {item.value} Cr {">"}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>
