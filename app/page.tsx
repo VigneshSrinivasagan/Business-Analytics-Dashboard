@@ -124,17 +124,17 @@ export default function DashboardPage() {
           {/* Opportunities Module */}
           <OpportunitiesModule accounts={ACCOUNTS} serviceLines={SERVICE_LINES} />
 
-          {/* Work Force Demand Module */}
+          {/* Work Force Demand Module }
           <WorkForceDemandModule />
 
-          {/* Open Requirements Module */}
+          {/* Open Requirements Module }
           <OpenRequirementsModule />
 
-          {/* Fulfilments Module */}
+          {/* Fulfilments Module }
           <FulfilmentsModule />
 
-          {/* Revenue Outlook Module */}
-          <RevenueOutlookModule />
+          {/* Revenue Outlook Module }
+          <RevenueOutlookModule /> */}
 
           {/* Talent Market Outlook Module */}
           <TalentMarketOutlookModule />

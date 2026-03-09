@@ -4,6 +4,7 @@ import { useState } from "react"
 import { DetailViewSlide } from "./detail-view-slide"
 import { RequirementsSplitView } from "./requirements-split-view"
 import { TCVView } from "./tcv-view"
+import { OpportunitiesView } from "./opportunities-view"
 import {
   generateRevenueRecords,
   generateOpportunities,
@@ -17,73 +18,73 @@ interface FlowchartStep {
   description: string
   color: string
   scrollId: string
-  dataType: "revenue" | "opportunities-open" | "opportunities-closed" | "requirements" | "fulfilments" | "margin" | "requirements-split" | "tcv"
+  dataType: "revenue" | "opportunities-open" | "opportunities-closed" | "requirements" | "fulfilments" | "margin" | "requirements-split" | "tcv" | "opportunities"
 }
 
 const flowSteps: FlowchartStep[] = [
   {
-    label: "Revenue",
+    label: "Revenue - Target",
     value: "₹100 Cr",
-    description: "(Target)",
+    description: "",
     color: "var(--chart-1)",
     scrollId: "revenue-module",
     dataType: "revenue",
   },
   {
-    label: "Revenue",
+    label: "Revenue - Current",
     value: "₹80 Cr",
-    description: "(Current Outlook)",
+    description: "",
     color: "var(--chart-2)",
     scrollId: "revenue-module",
     dataType: "revenue",
   },
   {
-    label: "Margin",
+    label: "Margin - Target",
     value: "200",
-    description: "(Target)",
+    description: "",
     color: "var(--chart-3)",
     scrollId: "opportunities-module",
     dataType: "margin",
   },
   {
-    label: "Margin",
+    label: "Margin - As per MIP",
     value: "180",
-    description: "(Current Outlook - As per MIP)",
+    description: "",
     color: "var(--chart-4)",
     scrollId: "opportunities-module",
     dataType: "margin",
   },
   {
-    label: "Opportunities",
-    value: "850",
-    description: "Total Opps",
-    color: "var(--chart-5)",
-    scrollId: "opportunities-module",
-    dataType: "opportunities-open",
+    label: "TCV",
+    value: "120",
+    description: "",
+    color: "var(--chart-8)",
+    scrollId: "tcv-view",
+    dataType: "tcv",
   },
   {
-    label: "Requirements",
+    label: "Opportunities - Pipeline",
+    value: "850",
+    description: "",
+    color: "var(--chart-5)",
+    scrollId: "opportunities-module",
+    dataType: "opportunities",
+  },
+  {
+    label: "Requirements ( MOT ) - Open",
     value: "250",
-    description: "Open",
+    description: "",
     color: "var(--chart-6)",
     scrollId: "requirements-module",
     dataType: "requirements-split",
   },
   {
-    label: "Requirements",
+    label: "Requirements ( MOT ) - Closed",
     value: "600",
-    description: "Closed",
+    description: "",
     color: "var(--chart-7)",
     scrollId: "fulfilments-module",
     dataType: "fulfilments",
-  },
-  {
-    label: "TCV",
-    value: "120",
-    description: "Total Contract Value",
-    color: "var(--chart-8)",
-    scrollId: "tcv-view",
-    dataType: "tcv",
   },
 ]
 
@@ -106,6 +107,7 @@ export function WorkflowFlowchart({ accounts }: WorkflowFlowchartProps) {
 
   const [showRequirementsSplit, setShowRequirementsSplit] = useState(false)
   const [showTCVView, setShowTCVView] = useState(false)
+  const [showOpportunitiesView, setShowOpportunitiesView] = useState(false)
 
   const handleStepClick = (step: FlowchartStep) => {
     let data: any[] = []
@@ -156,6 +158,9 @@ export function WorkflowFlowchart({ accounts }: WorkflowFlowchartProps) {
         return
       case "tcv":
         setShowTCVView(true)
+        return
+      case "opportunities":
+        setShowOpportunitiesView(true)
         return
       case "fulfilments":
         title = "Fulfilment Details"
@@ -231,6 +236,11 @@ export function WorkflowFlowchart({ accounts }: WorkflowFlowchartProps) {
       <TCVView
         isOpen={showTCVView}
         onClose={() => setShowTCVView(false)}
+      />
+
+      <OpportunitiesView
+        isOpen={showOpportunitiesView}
+        onClose={() => setShowOpportunitiesView(false)}
       />
     </div>
   )
